@@ -1,0 +1,14 @@
+name: tests
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  pytest:
+    # Skipped on the template repo itself (its tests fail until the TODOs are solved); runs in student copies.
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pandas pytest
+      - run: pytest

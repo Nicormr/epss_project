@@ -1,0 +1,18 @@
+{
+  "catchment_area_km2": 55.33,
+  "latitude_deg": 38.237,
+  "longitude_deg": -7.687,
+  "smax_mm": 100,
+  "hmax_m": 5.0,
+  "hmin_m": 1.0,
+  "area_fixed_km2": 0.0685,
+  "irrigation_months": [
+    6,
+    7,
+    8,
+    9
+  ],
+  "demand_hm3_per_month": 0.02,
+  "eflow_fraction": 0.1,
+  "target_reliability": 0.9
+}

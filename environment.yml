@@ -1,0 +1,34 @@
+# EPSS 2026/27 · Part 1 (Python) course environment
+# Create:   conda env create -f environment.yml
+# Activate: conda activate epss
+# Update:   conda env update -f environment.yml --prune
+name: epss
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  # numerics and data
+  - numpy
+  - scipy
+  - pandas
+  - xarray
+  - netcdf4
+  - h5netcdf
+  - cfgrib
+  - openpyxl
+  - statsmodels
+  - scikit-learn
+  # plotting and maps
+  - matplotlib
+  - seaborn
+  - cartopy
+  - gdal            # meteoraster needs osgeo.ogr for KML zonal means
+  # Copernicus Climate Data Store API
+  - cdsapi>=0.7.2   # new CDS (2024+) API
+  # notebooks, testing
+  - ipykernel
+  - jupyterlab
+  - pytest
+  - pip
+  - pip:
+      - meteoraster

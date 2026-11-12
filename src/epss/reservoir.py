@@ -27,7 +27,7 @@ class Reservoir:
         # TODO: Level from volume: inverse interpolation of the h-V curve (np.interp with volumes as x).
         # In: v (hm³)
         # Out: h (m)
-        raise NotImplementedError('Level from volume: inverse interpolation of the h-V curve (np.interp with volumes as x).')
+        return np.interp(v, self.hv.v_hm3, self.hv.h_m)
 
     def area(self, v):
         """Surface area (km²) at volume v: fixed A0, or dV/dh at level(v)."""
@@ -35,7 +35,10 @@ class Reservoir:
         #       (np.gradient), interpolated at level(v).
         # In: v (hm³)
         # Out: A (km²); note that 1 hm³/m = 1 km²
-        raise NotImplementedError('Surface area: the fixed A0 if it was given; otherwise A = dV/dh from the h-V table (np.gradient), interpolated at level(v).')
+        if self.area0 is not None:
+            return self.area0
+        dvdh = np.gradient(self.hv.v_hm3, self.hv.h_m)      # hm³/m = km²
+        return np.interp(self.level(v), self.hv.h_m, dvdh)
 
     def simulate(self, inflow, evap_mm, demand, eflow, v0=None):
         """Month-by-month simulation. All inputs are pd.Series on the same monthly index.
@@ -51,4 +54,21 @@ class Reservoir:
         # In: inflow, demand, eflow targets (hm³/month), evap_mm (mm/month), pd.Series on the same index
         # Out: DataFrame with columns inflow, eflow, evaporation, supply, deficit, spill, volume, level
         #      (end of month)
-        raise NotImplementedError('Monthly mass balance (sheet 3.5). Each month: 1) V* = V + Qin; 2) e-flow = min(target, Qin); 3) evaporation = evap_mm * area(V) / 1000, never below Vmin; 4) supply = min(D, water above Vmin), deficit = D - supply; 5) spill above Vmax. Start at v0 (default Vmax).')
+        V = self.vmax if v0 is None else v0                 # start full
+        rows = []
+        for q, ev, d, et in zip(inflow.values, evap_mm.values, demand.values, eflow.values):
+            A = self.area(V)                                # area at start-of-month volume
+            Vs = V + q                                      # 1) inflow
+            qe = min(et, q)                                 # 2) e-flow
+            Vs -= qe
+            E = min(ev * A / 1000, max(Vs - self.vmin, 0.0))  # 3) evaporation, not below Vmin
+            Vs -= E
+            s = min(d, max(Vs - self.vmin, 0.0))            # 4) supply
+            Vs -= s
+            sp = max(Vs - self.vmax, 0.0)                   # 5) spill
+            Vs -= sp
+            V = Vs
+            rows.append((q, qe, E, s, d - s, sp, V, float(self.level(V))))
+        return pd.DataFrame(rows, index=inflow.index,
+                            columns=["inflow", "eflow", "evaporation", "supply",
+                                     "deficit", "spill", "volume", "level"])

@@ -10,4 +10,4 @@ def eflow_targets(inflow, fraction=0.10):
     #       groupby(index.month).transform('mean')).
     # In: inflow (pd.Series, hm³/month), fraction (-)
     # Out: pd.Series of targets (hm³/month), same index
-    raise NotImplementedError("E-flow target (sheet eq. 9): fraction x mean inflow of the same calendar month (hint: groupby(index.month).transform('mean')).")
+    return (fraction * inflow.groupby(inflow.index.month).transform("mean")).rename("eflow_target")

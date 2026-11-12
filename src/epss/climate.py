@@ -1,15 +1,36 @@
 """Climate data: unit conversions and catchment-average series from ERA5-Land NetCDF."""
+from pathlib import Path
+import tempfile
+import zipfile
+
 import numpy as np
 import pandas as pd
 import xarray as xr
 
 
+def _open_dataset(path):
+    """Open a NetCDF file, including the zip archive format used by the course data."""
+    path = Path(path)
+    if zipfile.is_zipfile(path):
+        members = sorted(
+            name for name in zipfile.ZipFile(path).namelist() if name.lower().endswith(".nc")
+        )
+        if not members:
+            raise ValueError(f"No NetCDF files found in archive: {path}")
+        tmpdir = tempfile.mkdtemp(prefix="epss_")
+        with zipfile.ZipFile(path) as zf:
+            zf.extract(members[0], tmpdir)
+        extracted_path = Path(tmpdir) / Path(members[0]).name
+        return xr.open_dataset(extracted_path)
+    return xr.open_dataset(path)
+
+
 def kelvin_to_celsius(t):
     """Temperature in K -> °C."""
-    # TODO: Convert the temperature from kelvin to degrees Celsius.
-    # In: t in K (number, array or pd.Series)
-    # Out: t in °C, same type
-    raise NotImplementedError('Convert the temperature from kelvin to degrees Celsius.')
+    out = np.asarray(t) - 273.15
+    if isinstance(t, pd.Series):
+        return pd.Series(out, index=t.index, name=t.name)
+    return out
 
 
 def to_monthly_mm(tp):
@@ -17,11 +38,11 @@ def to_monthly_mm(tp):
 
     tp: pd.Series with a monthly DatetimeIndex (month start).
     """
-    # TODO: Convert precipitation from mean daily rate (m/day) to monthly total (mm/month): x 1000 and
-    #       x days in each month (tp.index.days_in_month).
-    # In: tp (pd.Series, m/day, monthly DatetimeIndex)
-    # Out: pd.Series in mm/month, same index
-    raise NotImplementedError('Convert precipitation from mean daily rate (m/day) to monthly total (mm/month): x 1000 and x days in each month (tp.index.days_in_month).')
+    if isinstance(tp, pd.Series):
+        out = tp * 1000.0 * tp.index.days_in_month.astype(float)
+        out.name = tp.name
+        return out
+    return np.asarray(tp) * 1000.0
 
 
 def to_meteoraster(da, variable="unknown", units="unknown"):
@@ -54,6 +75,7 @@ def catchment_series(nc_file, kml, variable):
 
     Returns a pd.Series indexed by month start.
     """
-    mr = to_meteoraster(xr.open_dataset(nc_file)[variable], variable)
+    ds = _open_dataset(nc_file)
+    mr = to_meteoraster(ds[variable], variable)
     agg, _ = mr.get_values_from_KML(str(kml))
     return pd.Series(agg.iloc[:, 0].values, index=pd.DatetimeIndex(mr.production_datetime), name=variable)

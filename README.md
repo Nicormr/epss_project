@@ -4,10 +4,11 @@
 
 | Name | Student number |
 |---|---|
-| | |
-| | |
-| | |
-| | |
+| Nicolas Reimer| ist1121584 |
+| Alice Gregori | ist1120046|
+| Simão Ferreira | ist1106939 |
+| Filip Nordgren | ist1120772|
+| Gonçalo Landeiro | ist1110031|
 
 ## How to run
 
@@ -49,8 +50,11 @@ use that may be made of the Copernicus information or data it contains.
 
 ## Answers (section 3.7)
 
-*To be completed.*
+a) How high: Required hmax = 6.76 m, Vmax = 0.537 hm³
+
+b) How reliable: hmax = 5.0 m: Rt = 0.725, Rv = 0.738
 
 ## AI declaration
 
-Tools used and what for:
+Tools used and what for: Claude (Antrophic) for explaining error maessages and solving implemented errors
+

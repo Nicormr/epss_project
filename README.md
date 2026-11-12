@@ -56,5 +56,5 @@ b) How reliable: hmax = 5.0 m: Rt = 0.725, Rv = 0.738
 
 ## AI declaration
 
-Tools used and what for: Claude (Antrophic) for explaining error maessages and solving implemented errors
+Tools used and what for: Claude (Antrophic) for explaining error messages and solving implemented errors
 

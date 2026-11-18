@@ -27,4 +27,8 @@ def test_balance_closes_every_month():
     #       S0 = 0). Bounds: 0 <= S <= Smax, H >= 0, AET <= PET.
     # In: tm (DataFrame from thornthwaite_mather, Smax = 80 mm, S0 = 0)
     # Out: assert statements (np.allclose for float comparisons)
-    raise NotImplementedError('Write the checks of this test. Balance every month: P = H + AET + dS (dS = S(t) - S(t-1), S0 = 0). Bounds: 0 <= S <= Smax, H >= 0, AET <= PET.')
+    ds = tm.soil.diff().fillna(tm.soil.iloc[0])
+    assert np.allclose(tm.p, tm.runoff + tm.aet + ds)
+    assert (tm.soil >= -1e-9).all() and (tm.soil <= 80 + 1e-9).all()
+    assert (tm.runoff >= -1e-9).all()
+    assert (tm.aet <= tm.pet + 1e-9).all()
